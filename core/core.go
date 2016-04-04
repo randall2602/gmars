@@ -1,11 +1,33 @@
 // package implements the Core of the Memory Array Redcode Simulator (MARS)
 package core
 
-var CORE_DESCRIPTION string = `The core (the memory of the simulated computer) is a continuous
- array of instructions, empty except for the competing programs. The core wraps around, so
- that after the last instruction comes the first one again.`
+// Initialize with KOTH settings. http://www.koth.org/
+type Config struct {
+	CoreSize            int
+	CyclesBeforeTie     int
+	InitialInstructions string
+	InstructionLimit    int
+	MaxTasks            int
+	MinSeparation       int
+	ReadDistance        int
+	Separation          int // if zero, Separation is random
+	Warriors            int
+	WriteDistance       int
+}
 
-// Returns a description of what the MARS Core is
-func WhatIsCore() string {
-	return CORE_DESCRIPTION
+type Instruction struct {
+	// An opcode is any of the following: DAT, MOV, ADD, SUB, MUL, DIV, MOD, JMP, JMZ, JMN, DJN, CMP, SLT, or SPL.
+	Opcode string
+
+	// An opcode may be followed by a modifier.  A modifier always begins with a dot.  A modifier is any of the
+	// following: .A, .B, .AB, .BA, .F, .X, or .I.
+	Modifier string
+
+	// Each operand is blank, contains an address, or contains an addressing mode indicator and an address.
+	OperandA string
+	OperandB string
+}
+
+type Core struct {
+	Memory []Instruction
 }
