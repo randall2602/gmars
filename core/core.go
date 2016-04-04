@@ -31,3 +31,23 @@ type Config struct {
 type Core struct {
 	Memory []Instruction
 }
+
+func ConfigureKOTH() Config {
+	return Config{
+		CoreSize:        8000,
+		CyclesBeforeTie: 80000,
+		InitialInstructions: Instruction{
+			Opcode:   "DAT",
+			Modifier: "F",
+			OperandA: "$0",
+			OperandB: "$0",
+		},
+		InstructionLimit: 100,
+		MaxTasks:         8000,
+		MinSeparation:    100,
+		ReadDistance:     8000,
+		Separation:       0,
+		Warriors:         2,
+		WriteDistance:    8000,
+	}
+}

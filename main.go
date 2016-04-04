@@ -8,27 +8,12 @@ import (
 
 func main() {
 
-	KOTHConfig := core.Config{
-		CoreSize:        8000,
-		CyclesBeforeTie: 80000,
-		InitialInstructions: core.Instruction{
-			Opcode:   "DAT",
-			Modifier: "F",
-			OperandA: "$0",
-			OperandB: "$0",
-		},
-		InstructionLimit: 100,
-		MaxTasks:         8000,
-		MinSeparation:    100,
-		ReadDistance:     8000,
-		Separation:       0,
-		Warriors:         2,
-		WriteDistance:    8000,
-	}
-
+	config := core.ConfigureKOTH()
 	MyCore := core.Core{
-		Memory: make([]core.Instruction, 8000),
+		Memory: make([]core.Instruction, config.CoreSize),
 	}
-	fmt.Println(KOTHConfig.CoreSize)
+	for i := range MyCore.Memory {
+		MyCore.Memory[i] = config.InitialInstructions
+	}
 	fmt.Println(MyCore)
 }
