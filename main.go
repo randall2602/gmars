@@ -1,14 +1,14 @@
-
 package main
 
 import (
 	"fmt"
+
 	"github.com/randall2602/gmars/core"
 	"github.com/randall2602/gmars/loader"
 	"github.com/randall2602/gmars/queues"
 )
 
-var EXECUTIVE_DESCRIPTION = 'The Executive Function defines how redcode programs are executed in the Core.'
+var EXECUTIVE_DESCRIPTION = `The Executive Function defines how redcode programs are executed in the Core.`
 
 func WhatIsExecutive() string {
 	return EXECUTIVE_DESCRIPTION
