@@ -51,3 +51,11 @@ func ConfigureKOTH() Config {
 		WriteDistance:    8000,
 	}
 }
+
+func Initialize(config Config) Core {
+	core := Core{Memory: make([]Instruction, config.CoreSize)}
+	for i := range core.Memory {
+		core.Memory[i] = config.InitialInstructions
+	}
+	return core
+}
