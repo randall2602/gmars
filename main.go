@@ -4,21 +4,31 @@ import (
 	"fmt"
 
 	"github.com/randall2602/gmars/core"
-	"github.com/randall2602/gmars/loader"
-	"github.com/randall2602/gmars/queues"
 )
 
-var EXECUTIVE_DESCRIPTION = `The Executive Function defines how redcode programs are executed in the Core.`
-
-func WhatIsExecutive() string {
-	return EXECUTIVE_DESCRIPTION
-}
-
 func main() {
-	fmt.Println("This is gMARS; a go implementation of the CoreWars game intended to be hosted as a web service.")
-	fmt.Println("A minimally-complete MARS consists of a core, a loader, task queues, the MARS executive function, and a way to present the final results of a battle.")
-	fmt.Println(WhatIsExecutive())
-	fmt.Println(core.WhatIsCore())
-	fmt.Println(loader.WhatIsLoader())
-	fmt.Println(queues.WhatIsQueues())
+
+	KOTHConfig := core.Config{
+		CoreSize:        8000,
+		CyclesBeforeTie: 80000,
+		InitialInstructions: core.Instruction{
+			Opcode:   "DAT",
+			Modifier: "F",
+			OperandA: "$0",
+			OperandB: "$0",
+		},
+		InstructionLimit: 100,
+		MaxTasks:         8000,
+		MinSeparation:    100,
+		ReadDistance:     8000,
+		Separation:       0,
+		Warriors:         2,
+		WriteDistance:    8000,
+	}
+
+	MyCore := core.Core{
+		Memory: make([]core.Instruction, 8000),
+	}
+	fmt.Println(KOTHConfig.CoreSize)
+	fmt.Println(MyCore)
 }
