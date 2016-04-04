@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 
 	"github.com/randall2602/gmars/core"
 	"github.com/randall2602/gmars/display"
@@ -19,8 +20,16 @@ func main() {
 	// print core n addresses at a time
 	display.Print(&MyCore, 8)
 
-	impFile, _ := ioutil.ReadFile("imp.redcode")
-	dwarfFile, _ := ioutil.ReadFile("dwarf.redcode")
+	impFileName := "imp.redcode"
+	dwarfFileName := "dwarf.redcode"
+	impFile, err := ioutil.ReadFile(impFileName)
+	if err != nil {
+		log.Fatalf("Couldn't read file %s", impFileName)
+	}
+	dwarfFile, err := ioutil.ReadFile(dwarfFileName)
+	if err != nil {
+		log.Fatalf("Couldn't read file %s", dwarfFileName)
+	}
 
 	imp := loader.Compile(impFile)
 	dwarf := loader.Compile(dwarfFile)
