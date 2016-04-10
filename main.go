@@ -4,10 +4,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 
 	"github.com/randall2602/gmars/core"
-	"github.com/randall2602/gmars/loader"
 )
+
+func Compile(f []byte) []string { // []Instruction {
+	var i []string                          // var i []Instruction
+	lines := strings.Split(string(f), "\n") // Returns [][]byte after splitting on /n
+	for _, l := range lines {
+		i = append(i, l) // i = append(i, parse(l)) // Returns Instruction
+	}
+	return l
+}
 
 func main() {
 
@@ -29,13 +38,8 @@ func main() {
 		log.Fatalf("Couldn't read file %s", dwarfFileName)
 	}
 
-	imp := loader.Compile(impFile)
-	dwarf := loader.Compile(dwarfFile)
-	warriors := []loader.Warrior{imp, dwarf}
-
-	loader.Load(warriors, &MyCore, config)
-
-	MyCore.View(8)
+	imp := Compile(impFile)
+	dwarf := Compile(dwarfFile)
 
 	fmt.Println(imp)
 	fmt.Println(dwarf)
