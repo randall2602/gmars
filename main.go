@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 
 	"github.com/randall2602/gmars/core"
-	"github.com/randall2602/gmars/display"
 	"github.com/randall2602/gmars/loader"
 )
 
@@ -16,8 +15,7 @@ func main() {
 	config.MinSeparation = 8
 	MyCore := core.Initialize(config)
 
-	// print core n addresses at a time
-	display.Print(&MyCore, 8)
+	MyCore.View(8)
 
 	impFile, _ := ioutil.ReadFile("imp.redcode")
 	dwarfFile, _ := ioutil.ReadFile("dwarf.redcode")
@@ -28,7 +26,7 @@ func main() {
 
 	loader.Load(warriors, &MyCore, config)
 
-	display.Print(&MyCore, 8)
+	MyCore.View(8)
 
 	fmt.Println(imp)
 	fmt.Println(dwarf)

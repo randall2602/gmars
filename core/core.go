@@ -1,5 +1,12 @@
-// package implements the Core of the Memory Array Redcode Simulator (MARS)
+// Package core implements the Core of the Memory Array Redcode Simulator (MARS)
+//
+// Draft design:
+//     New(config) -> Core
+//     Load(warrior...) -> position
+//     Reset([InitialInstruction]) -> err
 package core
+
+import "fmt"
 
 type Instruction struct {
 	// An opcode is any of the following: DAT, MOV, ADD, SUB, MUL, DIV, MOD, JMP, JMZ, JMN, DJN, CMP, SLT, or SPL.
@@ -14,7 +21,6 @@ type Instruction struct {
 	OperandB string
 }
 
-// Initialize with KOTH settings. http://www.koth.org/
 type Config struct {
 	CoreSize            int
 	CyclesBeforeTie     int
@@ -30,6 +36,13 @@ type Config struct {
 
 type Core struct {
 	Memory []Instruction
+}
+
+// View prints out the Core w columns at a time
+func (c *Core) View(w int) {
+	for i := 0; i < len(c.Memory)/w; i++ {
+		fmt.Println(c.Memory[i*w : i*w+w])
+	}
 }
 
 func ConfigureKOTH() Config {
