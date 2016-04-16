@@ -1,1 +1,1 @@
-{"mixinTypes":[],"builders":{"configs":{}},"runners":{"configs":{}},"description":"","type":"go","attributes":{"language":["go"]}}
+{"mixinTypes":[],"builders":{"configs":{}},"runners":{"configs":{},"default":"system:/go/standalone"},"description":"","type":"go","attributes":{"language":["go"]}}
