@@ -1,10 +1,4 @@
-// Copyright 2014 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-//go:generate stringer -type Type
-
-package scan // import "robpike.io/ivy/scan"
+package main
 
 import (
 	"fmt"
@@ -12,9 +6,6 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"robpike.io/ivy/exec"
-	"robpike.io/ivy/value"
 )
 
 // Token represents a token or text string returned from the scanner.
@@ -69,7 +60,6 @@ type stateFn func(*Scanner) stateFn
 // Scanner holds the state of the scanner.
 type Scanner struct {
 	tokens     chan Token // channel of scanned items
-	context    value.Context
 	r          io.ByteReader
 	done       bool
 	name       string // the name of the input; used only for error reports
@@ -140,10 +130,6 @@ func (l *Scanner) emit(t Type) {
 		l.line++
 	}
 	s := l.input[l.start:l.pos]
-	config := l.context.Config()
-	if config.Debug("tokens") {
-		fmt.Fprintf(config.Output(), "%s:%d: emit %s\n", l.name, l.line, Token{t, l.line, s})
-	}
 	l.tokens <- Token{t, l.line, s}
 	l.start = l.pos
 	l.width = 0
@@ -177,13 +163,12 @@ func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
 }
 
 // New creates a new scanner for the input string.
-func New(context value.Context, name string, r io.ByteReader) *Scanner {
+func New(name string, r io.ByteReader) *Scanner {
 	l := &Scanner{
 		r:       r,
 		name:    name,
 		line:    1,
 		tokens:  make(chan Token, 2), // We need a little room to save tokens.
-		context: context,
 		state:   lexAny,
 	}
 	return l
@@ -474,16 +459,7 @@ func lexNumber(l *Scanner) stateFn {
 }
 
 func (l *Scanner) scanNumber() bool {
-	base := l.context.Config().InputBase()
-	digits := digitsForBase(base)
-	// If base 0, acccept octal for 0 or hex for 0x or 0X.
-	if base == 0 {
-		if l.accept("0") && l.accept("xX") {
-			digits = digitsForBase(16)
-		}
-		// Otherwise leave it decimal (0); strconv.ParseInt will take care of it.
-		// We can't set it to 8 in case it's a leading-0 float like 0.69 or 09e4.
-	}
+	digits := digitsForBase(0)
 	l.acceptRun(digits)
 	if l.accept(".") {
 		l.acceptRun(digits)
