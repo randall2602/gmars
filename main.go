@@ -7,7 +7,7 @@ import (
 
 type Warrior struct {}
 
-func (w *Warrior) unload() (byte, error) {
+func (w *Warrior) ReadByte() (byte, error) {
   var c byte
   var err error
   return c, err
