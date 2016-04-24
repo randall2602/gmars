@@ -165,11 +165,11 @@ func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
 // New creates a new scanner for the input string.
 func New(name string, r io.ByteReader) *Scanner {
 	l := &Scanner{
-		r:       r,
-		name:    name,
-		line:    1,
-		tokens:  make(chan Token, 2), // We need a little room to save tokens.
-		state:   lexAny,
+		r:      r,
+		name:   name,
+		line:   1,
+		tokens: make(chan Token, 2), // We need a little room to save tokens.
+		state:  lexAny,
 	}
 	return l
 }
@@ -313,11 +313,9 @@ Loop:
 			switch {
 			case word == "o" && l.peek() == '.':
 				return lexOperator
-			case exec.OperatorWord[word] || l.context.UserDefined(word, true):
-				return lexOperator
 			case word == "op":
 				l.emit(Op)
-			case isAllDigits(word, l.context.Config().InputBase()):
+			case isAllDigits(word, 0):
 				l.emit(Number)
 			default:
 				l.emit(Identifier)
@@ -333,7 +331,7 @@ Loop:
 func lexOperator(l *Scanner) stateFn {
 	// It might be an inner product or reduction, but only if it is a binary operator.
 	word := l.input[l.start:l.pos]
-	if word == "o" || exec.IsBinary[word] || l.context.UserDefined(word, true) {
+	if word == "o" {
 		switch l.peek() {
 		case '/':
 			// Reduction.
@@ -349,7 +347,6 @@ func lexOperator(l *Scanner) stateFn {
 				l.emit(Operator) // Up to but not including the period.
 				return lexNumber // We know it starts ".7".
 			}
-			startRight := l.pos
 			r := l.next()
 			switch {
 			case l.isOperator(r):
@@ -360,10 +357,6 @@ func lexOperator(l *Scanner) stateFn {
 				l.backup()
 				if !l.atTerminator() {
 					return l.errorf("bad character %#U", r)
-				}
-				word := l.input[startRight:l.pos]
-				if !exec.OperatorWord[word] && !l.context.UserDefined(word, true) {
-					return l.errorf("%s not an operator", word)
 				}
 			}
 		}
@@ -428,7 +421,7 @@ func lexNumber(l *Scanner) stateFn {
 			l.emit(Operator)
 			return lexAny
 		}
-		if r != '.' && !isNumeral(r, l.context.Config().InputBase()) {
+		if r != '.' && !isNumeral(r, 0) {
 			l.emit(Operator)
 			return lexAny
 		}
@@ -443,7 +436,7 @@ func lexNumber(l *Scanner) stateFn {
 	// Might be a rational.
 	l.accept("/")
 
-	if r := l.peek(); r != '.' && !isNumeral(r, l.context.Config().InputBase()) {
+	if r := l.peek(); r != '.' && !isNumeral(r, 0) {
 		// Oops, not a number. Hack!
 		l.pos-- // back up before '/'
 		l.emit(Number)
