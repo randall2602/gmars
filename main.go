@@ -5,21 +5,13 @@ import (
 	"fmt"
 )
 
-type Warrior struct {
-	body []byte
-}
-
-func (w Warrior) ReadByte() (byte, error) {
-	var c byte = w.body
-	var err error
-	return c, err
-}
-
 func main() {
-	fmt.Println("Hello world")
-	w := Warrior{[]byte("abc def")}
-	myScanner := New("my scanner", w)
-	fmt.Println(myScanner)
-	myScanner.loadLine()
+	t := Lookup("JMP")
 
+	fmt.Println(t)
+	fmt.Println("Is literal: ", t.IsLiteral())
+	fmt.Println("Is opcode: ", t.IsOpcode())
+	fmt.Println("Is operator: ", t.IsOperator())
+	fmt.Println("Precedence: ", t.Precedence())
+	fmt.Println("Token string: ", t.String())
 }
