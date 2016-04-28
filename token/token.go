@@ -1,34 +1,54 @@
-package main
+// Package token defines constants representing the lexical tokens of Redcode
+// and basic operations on tokens (printing, predicates).
+//
+package token
 
 import "strconv"
 
+// Token is the set of lexical tokens of Redcode
 type Token int
 
+// The list of tokens.
 const (
+	// Special tokens
 	ILLEGAL Token = iota
 	EOF
-	NEWLINE
-	COMMENT
+	NEWLINE // LF | CR | LF CR | CR LF
+	COMMENT // ; v* EOL | EOL
 
 	literal_beg
-	LABEL
-	INT
+	// Identifiers and basic type literals
+	// (these tokens stand for classes of literals)
+	LABEL // alpha alphanumeral*
+	INT   // int | -int | +int
 	literal_end
 
 	operator_beg
-	PLUS
-	MINUS
-	ASTERISK
-	FSLASH
-	PERCENT
-	LPAREN
-	RPAREN
-	DOT
-	COMMA
-	SEMICOLON
+	// Operators and delimiters
+	// Many have non-standard names to prevent conflicts with opcodes (PLUS/ADD, MINUS/SUB)
+	PLUS      // 1+1
+	MINUS     // 1-1
+	ASTERISK  // 1*1
+	FSLASH    // 1/1
+	PERCENT   // 1%1
+	LPAREN    // "("
+	RPAREN    // ")"
+	DOT       // "."
+	COMMA     //","
+	SEMICOLON //";"
 	operator_end
 
+	mode_beg
+	// Addressing modes
+	HASH   // "#"
+	DSIGN  // "$"
+	ATSIGN // "@"
+	LTHAN  // "<"
+	GTHAN  // ">"
+	mode_end
+
 	opcode_beg
+	// Opcodes
 	DAT
 	MOV
 	ADD
@@ -49,6 +69,7 @@ const (
 	opcode_end
 
 	mod_beg
+	// Opcode modifiers
 	A
 	B
 	AB
@@ -57,14 +78,6 @@ const (
 	X
 	I
 	mod_end
-
-	mode_beg
-	HASH
-	DSIGN
-	ATSIGN
-	LTHAN
-	GTHAN
-	mode_end
 )
 
 var tokens = [...]string{
@@ -86,6 +99,12 @@ var tokens = [...]string{
 	DOT:       ".",
 	COMMA:     ",",
 	SEMICOLON: ";",
+
+	HASH:   "#",
+	DSIGN:  "$",
+	ATSIGN: "@",
+	LTHAN:  "<",
+	GTHAN:  ">",
 
 	DAT: "DAT",
 	MOV: "MOV",
@@ -112,14 +131,14 @@ var tokens = [...]string{
 	F:  "F",
 	X:  "X",
 	I:  "I",
-
-	HASH:   "HASH",
-	DSIGN:  "DSIGN",
-	ATSIGN: "ATSIGN",
-	LTHAN:  "LTHAN",
-	GTHAN:  "GTHAN",
 }
 
+// String returns the string corresponding to the token tok.
+// For operators, delimiters, and keywords the string is the actual
+// token character sequence (e.g., for the token PLUS, the string is
+// "+"). For all other tokens the string corresponds to the token
+// constant name (e.g. for the token IDENT, the string is "IDENT").
+//
 func (tok Token) String() string {
 	s := ""
 	if 0 <= tok && tok < Token(len(tokens)) {
@@ -131,6 +150,12 @@ func (tok Token) String() string {
 	return s
 }
 
+// A set of constants for precedence-based expression parsing.
+// Non-operators have lowest precedence, followed by operators
+// st:qarting with precedence 1 up to unary operators. The highest
+// precedence serves as "catch-all" precedence for selector,
+// indexing, and other operator and delimiter tokens.
+//
 const (
 	LowestPrec  = 0
 	UnaryPrec   = 2
