@@ -162,8 +162,12 @@ const (
 	HighestPrec = 3
 )
 
-func (op Token) Precedence() int {
-	switch op {
+// Precedence returns the operator precedence of the binary
+// operator op. If op is not a binary operator, the result
+// is LowestPrecedence.
+//
+func (tok Token) Precedence() int {
+	switch tok {
 	case PLUS, MINUS:
 		return 1
 	case ASTERISK, FSLASH, PERCENT: // 1*2, 3/4, 5%6
@@ -181,6 +185,8 @@ func init() {
 	}
 }
 
+// Lookup maps an identifier to its keyword token or LABEL (if not a keyword).
+//
 func Lookup(ident string) Token {
 	if tok, is_opcode := opcodes[ident]; is_opcode {
 		return tok
@@ -188,8 +194,19 @@ func Lookup(ident string) Token {
 	return LABEL
 }
 
+// Predicates
+
+// IsLiteral returns true for tokens corresponding to identifiers
+// and basic type literals; it returns false otherwise.
+//
 func (tok Token) IsLiteral() bool { return literal_beg < tok && tok < literal_end }
 
+// IsOperator returns true for tokens corresponding to operators and
+// delimiters; it returns false otherwise.
+//
 func (tok Token) IsOperator() bool { return operator_beg < tok && tok < operator_end }
 
+// IsOpcode returns true for tokens corresponding to keywords;
+// it returns false otherwise.
+//
 func (tok Token) IsOpcode() bool { return opcode_beg < tok && tok < opcode_end }

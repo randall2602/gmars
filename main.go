@@ -3,10 +3,12 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/randall2602/gmars/token"
 )
 
 func main() {
-	t := Lookup("JMP")
+	t := token.Lookup("JMP")
 
 	fmt.Println(t)
 	fmt.Println("Is literal: ", t.IsLiteral())
