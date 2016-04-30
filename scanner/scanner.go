@@ -25,18 +25,20 @@ type Scanner struct {
 	mode Mode
 }
 
+/*
 const bom = 0xFEFF
 
 // Read the next Unicode char into s.ch.
 // s.ch < 0 means end-of-file.
 //
 func (s *Scanner) next() {}
-
+*/
 // A mode value is a set of flags (or 0).
 // They control scanner behavior.
 //
 type Mode uint
 
+/*
 const (
 	ScanComments Mode = 1 << iota
 	dontInsertSemis
@@ -141,3 +143,4 @@ func (s *Scanner) switch4(tok0, tok1 token.Token, ch2 rune, tok2, tok3 token.Tok
 // and thus relative to the file set.
 //
 func (s *Scanner) Scan() (pos token.Pos, tok token.Token, lit string) {}
+*/
