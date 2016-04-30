@@ -13,22 +13,17 @@ import "github.com/randall2602/gmars/token"
 //
 type ErrorHandler func(pos token.Position, msg string)
 
-<<<<<<< HEAD
 // A Scanner holds the scanner's internal state while processing
 // a given text.  It can be allocated as part of another data
 // structure but must be initialized via Init before use.
 //
-type Scanner struct{}
-=======
-type Mode int
-
 type Scanner struct {
 	file *token.File
 	dir  string
 	src  []byte
 	err  ErrorHandler
 	mode Mode
->>>>>>> f4aa608d940419d15db7ee320c29f2cfc2d187e4
+}
 
 const bom = 0xFEFF
 
