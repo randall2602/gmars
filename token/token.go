@@ -6,13 +6,19 @@ package token
 import "strconv"
 
 // Token is the set of lexical tokens of Redcode
-type Token int
+type Type int
+
+type Token struct {
+	Type Type
+	Line int
+	Text string
+}
 
 // The list of tokens.
 const (
 	// Special tokens
-	ILLEGAL Token = iota
-	EOF
+	EOF Type = iota
+	ILLEGAL
 	NEWLINE // LF | CR | LF CR | CR LF
 	COMMENT // ; v* EOL | EOL
 
@@ -80,7 +86,7 @@ const (
 	mod_end
 )
 
-var tokens = [...]string{
+var types = [...]string{
 	ILLEGAL: "ILLEGAL",
 	EOF:     "EOF",
 	NEWLINE: "NEWLINE",
@@ -141,11 +147,11 @@ var tokens = [...]string{
 //
 func (tok Token) String() string {
 	s := ""
-	if 0 <= tok && tok < Token(len(tokens)) {
-		s = tokens[tok]
+	if 0 <= tok.Type && tok.Type < Type(len(types)) {
+		s = types[tok.Type]
 	}
 	if s == "" {
-		s = "token(" + strconv.Itoa(int(tok)) + ")"
+		s = "token(" + strconv.Itoa(int(tok.Type)) + ")"
 	}
 	return s
 }
