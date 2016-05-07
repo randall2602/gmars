@@ -2,6 +2,7 @@ package scanner
 
 import (
 	//"fmt"
+	"fmt"
 	"io"
 	"strings"
 	"unicode/utf8"
@@ -115,8 +116,7 @@ func (l *Scanner) acceptRun(valid string) {
 
 // errorf returns an error token and continues to scan.
 func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
-	// TODO: fix compile error
-	//l.tokens <- Token{token.ILLEGAL, l.start, fmt.Sprintf(format, aregs...)}
+	l.tokens <- token.Token{token.ILLEGAL, l.start, fmt.Sprintf(format, args...)}
 	return lexAny
 }
 
