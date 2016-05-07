@@ -1,146 +1,180 @@
-// Package scanner implements a scanner for redcode source text. It takes a
-// []byte as a source which can then be tokenized through repeated calls to the
-// Scan method
-//
 package scanner
 
-import "github.com/randall2602/gmars/token"
+import (
+	"fmt"
+	"io"
+	"strings"
+	"unicode/utf8"
 
-// An ErrorHandler may be provided to Scanner.Init. If a syntax error is
-// encountered and a handler was installed, the handler is called with a
-// position and an error message. The position points to the beginning of the
-// offending token.
-//
-type ErrorHandler func(pos token.Position, msg string)
-
-// A Scanner holds the scanner's internal state while processing
-// a given text.  It can be allocated as part of another data
-// structure but must be initialized via Init before use.
-//
-type Scanner struct {
-	file *token.File
-	dir  string
-	src  []byte
-	err  ErrorHandler
-	mode Mode
-}
-
-/*
-const bom = 0xFEFF
-
-// Read the next Unicode char into s.ch.
-// s.ch < 0 means end-of-file.
-//
-func (s *Scanner) next() {}
-*/
-// A mode value is a set of flags (or 0).
-// They control scanner behavior.
-//
-type Mode uint
-
-/*
-const (
-	ScanComments Mode = 1 << iota
-	dontInsertSemis
+	"github.github.com/randall2602/gmars/token"
 )
 
-// Init prepares the scanner s to tokenize the text src by setting the
-// scanner at the beginning of src. The scanner uses the file set file
-// for position information and it adds line information for each line.
-// It is ok to re-use the same file when re-scanning the same file as
-// line information which is already present is ignored. Init causes a
-// panic if the file size does not match the src size.
-//
-// Calls to Scan will invoke the error handler err if they encounter a
-// syntax error and err is not nil. Also, for each error encountered,
-// the Scanner field ErrorCount is incremented by one. The mode parameter
-// determines how comments are handled.
-//
-// Note that Init may call err if there is an error in the first character
-// of the file.
-//
-func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler, mode Mode) {}
+const eof = -1
 
-func (s *Scanner) error(offs int, msg string) {}
+// stateFn represents the state of the scanner as a function that returns the next state.
+type stateFn func(*Scanner) stateFn
 
-var prefix []byte
+// Scanner holds the state of the scanner.
+type Scanner struct {
+	tokens     chan token.Token // channel of scanned items
+	r          io.ByteReader
+	done       bool
+	name       string // the name of the input; used only for error reports
+	buf        []byte
+	input      string  // the line of text being scanned
+	leftDelim  string  // start of action
+	rightDelim string  // end of action
+	state      stateFn // the next lexing function to enter
+	line       int     // line number in input
+	pos        int     // current position of the input
+	start      int     // start position of this item
+	width      int     // width of last rune read from input
+}
 
-func (s *Scanner) interpretLineComment(text []byte) {}
+// loadLine reads the next line of input and stores it in (appends it to) the input.
+// (l.input may have data left over when we are called.)
+// It strips carriage returns to make subsequent processing simpler.
+func (l *Scanner) loadLine() {
+	l.buf = l.buf[:0]
+	for {
+		c, err := l.r.ReadByte()
+		if err != nil {
+			l.done = true
+			break
+		}
+		if c != '\r' {
+			l.buf = append(l.buf, c)
+		}
+		if c == '\n' {
+			break
+		}
+	}
+	l.input = l.input[l.start:l.pos] + string(l.buf)
+	l.pos -= l.start
+	l.start = 0
+}
 
-func (s *Scanner) scanComment() string {}
+func (l *Scanner) next() rune {
+	if !l.done && l.pos == len(l.input) {
+		l.loadLine()
+	}
+	if len(l.input) == l.pos {
+		l.width = 0
+		return eof
+	}
+	r, w := utf8.DecodeRuneInString(l.input[l.pos:])
+	l.width = w
+	l.pos += l.width
+	return r
+}
 
-func (s *Scanner) findLineEnd() bool {}
+// peek returns but does not consume the next rune in the input.
+func (l *Scanner) peek() rune {
+	r := l.next()
+	l.backup()
+	return r
+}
 
-func isLetter(ch rune) bool {}
+// backup steps back one rune. Can only be called once per call of next.
+func (l *Scanner) backup() {
+	l.pos -= l.width
+}
 
-func isDigit(ch rune) bool {}
+// emit passes an item back to the client.
+func (l *Scanner) emit(t Type) {
+	if t == token.NEWLINE {
+		l.line++
+	}
+	s := l.input[l.start:l.pos]
+	l.tokens <- token.Token{t}
+	l.start = l.pos
+	l.width = 0
+}
 
-func (s *Scanner) scanIdentifier() string {}
+// ignore skips over the pending input before this point.
+func (l *Scanner) ignore() {
+	l.start = l.pos
+}
 
-func digitVal(ch rune) int {}
+// accept consumes the next rune if it's from the valid set.
+func (l *Scanner) accept(valid string) bool {
+	if strings.IndexRune(valid, l.next()) >= 0 {
+		return true
+	}
+	l.backup()
+	return false
+}
 
-func (s *Scanner) scanMantissa(base int) {}
+// acceptRun consumes a run of runes from the valid set.
+func (l *Scanner) acceptRun(valid string) {
+	for strings.IndexRune(valid, l.next()) >= 0 {
 
-func (s *Scanner) scanNumber(seenDecimalPoint bool) (token.Token, string) {}
+	}
+	l.backup()
+}
 
-// scanEscape parses an escape sequence where rune is the accepted
-// escaped quote. In case of a syntax error, it stops at the offending
-// character (without consuming it) and returns false. Otherwise
-// it returns true.
-func (s *Scanner) scanEscape(quote rune) bool {}
+// errorf returns an error token and continues to scan.
+func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
+	l.tokens <- Token{token.ILLEGAL, l.start, fmt.Sprintf(format, aregs...)}
+	return lexAny
+}
 
-func (s *Scanner) scanRune() string {}
+// New creates a new scanner for the input string.
+func New(name string, r io.ByteReader) *Scanner {
+	l := &Scanner{
+		r:      r,
+		name:   name,
+		line:   1,
+		tokens: make(chan Token, 2), // We need a little room to save tokens.
+		state:  lexAny,
+	}
+	return l
+}
 
-func (s *Scanner) scanString() string {}
+// Next returns the next token.
+func (l *Scanner) Next() Token {
+	// The lexer is concurrent but we don't want it to run in parallel
+	// with the rest of the interpreter, so we only run the state machine
+	// when we need a token.
+	for l.state != nil {
+		select {
+		case tok := <-l.tokens:
+			return tok
+		default:
+			// Run the machine
+			l.state = l.state(l)
+		}
+	}
+	if l.tokens != nil {
+		close(l.tokens)
+		l.tokens = nil
+	}
+	return Token{token.EOF, l.pos, "EOF"}
+}
 
-func stripCR(b []byte) []byte {}
+// state functions
 
-func (s *Scanner) scanRawString() string {}
+// lexComment scans a comment. The comment marker has been consumed.
+func lexComment(l *Scanner) stateFun {
+	for {
+		r := l.next()
+		if r == eof || r == '\n' {
+			break
+		}
+	}
+	if len(l.input) > 0 {
+		l.pos = len(l.input)
+		l.start = l.pos - 1
+		// Emitting newline also advances l.line.
+		l.emit(token.NEWLINE)
+	}
+	return lexSpace
+}
 
-func (s *Scanner) skipWhitespace() {}
-
-// Helper functions for scanning multi-byte tokens such as >> += >>= .
-// Different routines recognize different length tok_i based on matches
-// of ch_i. If a token ends in '=', the result is tok1 or tok3
-// respectively. Otherwise, the result is tok0 if there was no other
-// matching character, or tok2 if the matching character was ch2.
-
-func (s *Scanner) switch2(tok0, tok1 token.Token) token.Token {}
-
-func (s *Scanner) switch3(tok0, tok1 token.Token, ch2 rune, tok2 token.Token) token.Token {}
-
-func (s *Scanner) switch4(tok0, tok1 token.Token, ch2 rune, tok2, tok3 token.Token) token.Token {}
-
-// Scan scans the next token and returns the token position, the token,
-// and its literal string if applicable. The source end is indicated by
-// token.EOF.
-//
-// If the returned token is a literal (token.IDENT, token.INT, token.FLOAT,
-// token.IMAG, token.CHAR, token.STRING) or token.COMMENT, the literal string
-// has the corresponding value.
-//
-// If the returned token is a keyword, the literal string is the keyword.
-//
-// If the returned token is token.SEMICOLON, the corresponding
-// literal string is ";" if the semicolon was present in the source,
-// and "\n" if the semicolon was inserted because of a newline or
-// at EOF.
-//
-// If the returned token is token.ILLEGAL, the literal string is the
-// offending character.
-//
-// In all other cases, Scan returns an empty literal string.
-//
-// For more tolerant parsing, Scan will return a valid token if
-// possible even if a syntax error was encountered. Thus, even
-// if the resulting token sequence contains no illegal tokens,
-// a client may not assume that no error occurred. Instead it
-// must check the scanner's ErrorCount or the number of calls
-// of the error handler, if there was one installed.
-//
-// Scan adds line information to the file added to the file
-// set with Init. Token positions are relative to that file
-// and thus relative to the file set.
-//
-func (s *Scanner) Scan() (pos token.Pos, tok token.Token, lit string) {}
-*/
+// lexAny scans non-space items.
+func lexAny(l *Scanner) stateFn {
+	switch r := l.next(); {
+	case r == eof:
+		return nil
+	}
+}
