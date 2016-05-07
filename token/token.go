@@ -173,7 +173,7 @@ const (
 // is LowestPrecedence.
 //
 func (tok Token) Precedence() int {
-	switch tok {
+	switch tok.Type {
 	case PLUS, MINUS:
 		return 1
 	case ASTERISK, FSLASH, PERCENT: // 1*2, 3/4, 5%6
@@ -187,7 +187,7 @@ var opcodes map[string]Token
 func init() {
 	opcodes = make(map[string]Token)
 	for i := opcode_beg + 1; i < opcode_end; i++ {
-		opcodes[tokens[i]] = i
+		opcodes[types[i]] = i
 	}
 }
 
