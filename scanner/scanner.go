@@ -81,13 +81,14 @@ func (l *Scanner) backup() {
 }
 
 // emit passes an item back to the client.
-func (l *Scanner) emit(t token.Token) {
+func (l *Scanner) emit(t token.Type) {
 	if t == token.NEWLINE {
 		l.line++
 	}
 	//s := l.input[l.start:l.pos]
 	// TODO: fix
 	var tok token.Token
+	tok.Type = t
 	l.tokens <- tok
 	l.start = l.pos
 	l.width = 0
