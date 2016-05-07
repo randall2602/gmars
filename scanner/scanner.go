@@ -1,12 +1,12 @@
 package scanner
 
 import (
-	"fmt"
+	//"fmt"
 	"io"
 	"strings"
 	"unicode/utf8"
 
-	"github.github.com/randall2602/gmars/token"
+	"github.com/randall2602/gmars/token"
 )
 
 const eof = -1
@@ -81,12 +81,14 @@ func (l *Scanner) backup() {
 }
 
 // emit passes an item back to the client.
-func (l *Scanner) emit(t Type) {
+func (l *Scanner) emit(t token.Token) {
 	if t == token.NEWLINE {
 		l.line++
 	}
-	s := l.input[l.start:l.pos]
-	l.tokens <- token.Token{t}
+	//s := l.input[l.start:l.pos]
+	// TODO: fix
+	var tok token.Token
+	l.tokens <- tok
 	l.start = l.pos
 	l.width = 0
 }
@@ -115,7 +117,8 @@ func (l *Scanner) acceptRun(valid string) {
 
 // errorf returns an error token and continues to scan.
 func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
-	l.tokens <- Token{token.ILLEGAL, l.start, fmt.Sprintf(format, aregs...)}
+	// TODO: fix compile error
+	//l.tokens <- Token{token.ILLEGAL, l.start, fmt.Sprintf(format, aregs...)}
 	return lexAny
 }
 
@@ -125,14 +128,14 @@ func New(name string, r io.ByteReader) *Scanner {
 		r:      r,
 		name:   name,
 		line:   1,
-		tokens: make(chan Token, 2), // We need a little room to save tokens.
+		tokens: make(chan token.Token, 2), // We need a little room to save tokens.
 		state:  lexAny,
 	}
 	return l
 }
 
 // Next returns the next token.
-func (l *Scanner) Next() Token {
+func (l *Scanner) Next() token.Token {
 	// The lexer is concurrent but we don't want it to run in parallel
 	// with the rest of the interpreter, so we only run the state machine
 	// when we need a token.
@@ -149,13 +152,16 @@ func (l *Scanner) Next() Token {
 		close(l.tokens)
 		l.tokens = nil
 	}
-	return Token{token.EOF, l.pos, "EOF"}
+	// TODO: fix compile error
+	//return token.Token{token.EOF, l.pos, "EOF"}
+	var t token.Token
+	return t
 }
 
 // state functions
 
 // lexComment scans a comment. The comment marker has been consumed.
-func lexComment(l *Scanner) stateFun {
+func lexComment(l *Scanner) stateFn {
 	for {
 		r := l.next()
 		if r == eof || r == '\n' {
@@ -168,13 +174,17 @@ func lexComment(l *Scanner) stateFun {
 		// Emitting newline also advances l.line.
 		l.emit(token.NEWLINE)
 	}
-	return lexSpace
+	// TODO: define lexSpace
+	//return lexSpace
+	return nil
 }
 
 // lexAny scans non-space items.
 func lexAny(l *Scanner) stateFn {
+	// TODO: implement
 	switch r := l.next(); {
 	case r == eof:
 		return nil
 	}
+	return nil
 }
