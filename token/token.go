@@ -182,10 +182,10 @@ func (tok Token) Precedence() int {
 	return LowestPrec
 }
 
-var opcodes map[string]Token
+var opcodes map[string]Type
 
 func init() {
-	opcodes = make(map[string]Token)
+	opcodes = make(map[string]Type)
 	for i := opcode_beg + 1; i < opcode_end; i++ {
 		opcodes[types[i]] = i
 	}
@@ -194,10 +194,10 @@ func init() {
 // Lookup maps an identifier to its keyword token or LABEL (if not a keyword).
 //
 func Lookup(ident string) Token {
-	if tok, is_opcode := opcodes[ident]; is_opcode {
-		return tok
+	if t, is_opcode := opcodes[ident]; is_opcode {
+		return Token{t, 0, ident}
 	}
-	return LABEL
+	return Token{LABEL, 0, ident}
 }
 
 // Predicates
@@ -205,14 +205,14 @@ func Lookup(ident string) Token {
 // IsLiteral returns true for tokens corresponding to identifiers
 // and basic type literals; it returns false otherwise.
 //
-func (tok Token) IsLiteral() bool { return literal_beg < tok && tok < literal_end }
+func (tok Token) IsLiteral() bool { return literal_beg < tok.Type && tok.Type < literal_end }
 
 // IsOperator returns true for tokens corresponding to operators and
 // delimiters; it returns false otherwise.
 //
-func (tok Token) IsOperator() bool { return operator_beg < tok && tok < operator_end }
+func (tok Token) IsOperator() bool { return operator_beg < tok.Type && tok.Type < operator_end }
 
 // IsOpcode returns true for tokens corresponding to keywords;
 // it returns false otherwise.
 //
-func (tok Token) IsOpcode() bool { return opcode_beg < tok && tok < opcode_end }
+func (tok Token) IsOpcode() bool { return opcode_beg < tok.Type && tok.Type < opcode_end }
