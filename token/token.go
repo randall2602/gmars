@@ -87,8 +87,8 @@ const (
 )
 
 var types = [...]string{
-	ILLEGAL: "ILLEGAL",
 	EOF:     "EOF",
+	ILLEGAL: "ILLEGAL",
 	NEWLINE: "NEWLINE",
 	COMMENT: "COMMENT",
 
