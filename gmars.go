@@ -2,8 +2,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 
+	"github.com/randall2602/gmars/scanner"
 	"github.com/randall2602/gmars/token"
 )
 
@@ -16,4 +19,13 @@ func main() {
 	fmt.Println("Is operator: ", t.IsOperator())
 	fmt.Println("Precedence: ", t.Precedence())
 	fmt.Println("Token string: ", t.String())
+	
+	name := "test.redcode"
+	fd, err := os.Open(name)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ivy: %s\n", err)
+		os.Exit(1)
+	}
+	scanner := scanner.New(name, bufio.NewReader(fd))
+	fmt.Println("scanner:", scanner)
 }
