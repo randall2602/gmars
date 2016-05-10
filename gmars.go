@@ -23,7 +23,7 @@ func main() {
 	name := "test.redcode"
 	fd, err := os.Open(name)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ivy: %s\n", err)
+		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
 		os.Exit(1)
 	}
 	scanner := scanner.New(name, bufio.NewReader(fd))
