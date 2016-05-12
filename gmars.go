@@ -28,4 +28,9 @@ func main() {
 	}
 	scanner := scanner.New(name, bufio.NewReader(fd))
 	fmt.Println("scanner:", scanner)
+	fmt.Println()
+	fmt.Println("Tokens:")
+	for tok := scanner.Next(); tok.Type != token.EOF; tok = scanner.Next() {
+		fmt.Println("tok: ", tok)
+	}
 }
