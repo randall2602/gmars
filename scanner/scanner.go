@@ -150,10 +150,7 @@ func (l *Scanner) Next() token.Token {
 		close(l.tokens)
 		l.tokens = nil
 	}
-	// TODO: fix compile error
-	//return token.Token{token.EOF, l.pos, "EOF"}
-	var t token.Token
-	return t
+	return token.Token{token.EOF, l.pos, "EOF"}
 }
 
 // state functions
