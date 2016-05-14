@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("Precedence: ", t.Precedence())
 	fmt.Println("Token string: ", t.String())
 	
-	name := "test.redcode"
+	name := "test.red"
 	fd, err := os.Open(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
