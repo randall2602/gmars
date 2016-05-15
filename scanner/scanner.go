@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/randall2602/gmars/token"
@@ -143,7 +144,7 @@ func (l *Scanner) Next() token.Token {
 			return tok
 		default:
 			// Run the machine
-			l.state = l.state(l)
+			l.state = l.state(l) // Magic!!!
 		}
 	}
 	if l.tokens != nil {
@@ -154,6 +155,75 @@ func (l *Scanner) Next() token.Token {
 }
 
 // state functions
+
+// lexAny scans non-space items.
+func lexAny(l *Scanner) stateFn {
+	switch r := l.next(); {
+	case r == eof:
+		return nil
+	case r == '\n' || r == '\r':
+		l.emit(token.NEWLINE)
+		if l.peek() == '\n' || l.peek() == '\r' {
+			l.next()
+		}
+		return lexAny
+	case r == ';':
+		l.emit(token.SEMICOLON)
+		return lexComment
+	case isSpace(r):
+		return lexSpace
+	case '0' <= r && r <= '9':
+		l.backup()
+		return lexNumber
+	case r == '+':
+		l.emit(token.PLUS)
+		return lexAny
+	case r == '-':
+		l.emit(token.MINUS)
+		return lexAny
+	case r == '*':
+		l.emit(token.ASTERISK)
+		return lexAny
+	case r == '/':
+		l.emit(token.FSLASH)
+		return lexAny
+	case r == '%':
+		l.emit(token.PERCENT)
+		return lexAny
+	case r == '(':
+		l.emit(token.LPAREN)
+		return lexAny
+	case r == ')':
+		l.emit(token.RPAREN)
+		return lexAny
+	case r == '.':
+		l.emit(token.DOT)
+		return lexAny
+	case r == ',':
+		l.emit(token.COMMA)
+		return lexAny
+	case r == '#':
+		l.emit(token.HASH)
+		return lexAny
+	case r == '$':
+		l.emit(token.DSIGN)
+		return lexAny
+	case r == '@':
+		l.emit(token.ATSIGN)
+		return lexAny
+	case r == '<':
+		l.emit(token.LTHAN)
+		return lexAny
+	case r == '>':
+		l.emit(token.GTHAN)
+		return lexAny
+	case isAlphaNumeric(r): // Already got numbers
+		l.backup()
+		return lexIdentifier
+	default:
+		return l.errorf("unrecognized character: %#U", r)
+	}
+}
 
 // lexComment scans a comment. The comment marker has been consumed.
 func lexComment(l *Scanner) stateFn {
@@ -169,17 +239,47 @@ func lexComment(l *Scanner) stateFn {
 		// Emitting newline also advances l.line.
 		l.emit(token.NEWLINE)
 	}
-	// TODO: define lexSpace
-	//return lexSpace
-	return nil
+	return lexSpace
 }
 
-// lexAny scans non-space items.
-func lexAny(l *Scanner) stateFn {
-	// TODO: implement
-	switch r := l.next(); {
-	case r == eof:
-		return nil
+// lexSpace scans a run of space characters.
+// One space has already been seen.
+func lexSpace(l *Scanner) stateFn {
+	for isSpace(l.peek()) {
+		l.next()
 	}
-	return nil
+	l.ignore()
+	return lexAny
+}
+
+// lexNumber scans a number. "05" == "5"
+func lexNumber(l *Scanner) stateFn {
+	l.acceptRun("0123456789")
+	l.emit(token.INT)
+	return lexAny
+}
+
+func lexIdentifier(l *Scanner) stateFn {
+Loop:
+	for {
+		switch r := l.next(); {
+		case isAlphaNumeric(r):
+			// absorb.
+		default:
+			l.backup()
+			word := l.input[l.start:l.pos]
+			t := token.Lookup(word)
+			l.emit(t.Type)
+			break Loop
+		}
+	}
+	return lexAny
+}
+
+func isSpace(r rune) bool {
+	return r == ' ' || r == '\t'
+}
+
+func isAlphaNumeric(r rune) bool {
+	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r)
 }

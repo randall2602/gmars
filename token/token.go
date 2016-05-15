@@ -183,11 +183,16 @@ func (tok Token) Precedence() int {
 }
 
 var opcodes map[string]Type
+var mods map[string]Type
 
 func init() {
 	opcodes = make(map[string]Type)
 	for i := opcode_beg + 1; i < opcode_end; i++ {
 		opcodes[types[i]] = i
+	}
+	mods = make(map[string]Type)
+	for i := mod_beg + 1; i < mod_end; i++ {
+		mods[types[i]] = i
 	}
 }
 
@@ -195,6 +200,9 @@ func init() {
 //
 func Lookup(ident string) Token {
 	if t, is_opcode := opcodes[ident]; is_opcode {
+		return Token{t, 0, ident}
+	}
+	if t, is_mod := mods[ident]; is_mod {
 		return Token{t, 0, ident}
 	}
 	return Token{LABEL, 0, ident}
