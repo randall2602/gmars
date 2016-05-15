@@ -11,16 +11,7 @@ import (
 )
 
 func main() {
-	t := token.Lookup("JMP")
-
-	fmt.Println(t)
-	fmt.Println("Is literal: ", t.IsLiteral())
-	fmt.Println("Is opcode: ", t.IsOpcode())
-	fmt.Println("Is operator: ", t.IsOperator())
-	fmt.Println("Precedence: ", t.Precedence())
-	fmt.Println("Token string: ", t.String())
-	
-	name := "test1.red"
+	name := "test3.red"
 	fd, err := os.Open(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
@@ -31,6 +22,10 @@ func main() {
 	fmt.Println()
 	fmt.Println("Tokens:")
 	for tok := scanner.Next(); tok.Type != token.EOF; tok = scanner.Next() {
-		fmt.Println("tok: ", tok)
+		fmt.Print("tok: ", tok, " ")
+		if tok.Type == token.NEWLINE {
+			fmt.Print("\n")
+		}
 	}
+	fmt.Print("\n")
 }
