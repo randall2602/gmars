@@ -3,7 +3,10 @@
 //
 package token
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 // Token is the set of lexical tokens of Redcode
 type Type int
@@ -147,7 +150,7 @@ var types = [...]string{
 //
 func (tok Token) String() string {
 	s := ""
-	if 0 <= tok.Type && tok.Type < Type(len(types)) {
+	if 0 <= int(tok.Type) && int(tok.Type) < len(types) {
 		s = types[tok.Type]
 	}
 	if s == "" {
@@ -199,10 +202,10 @@ func init() {
 // Lookup maps an identifier to its keyword token or LABEL (if not a keyword).
 //
 func Lookup(ident string) Token {
-	if t, is_opcode := opcodes[ident]; is_opcode {
+	if t, is_opcode := opcodes[strings.ToUpper(ident)]; is_opcode {
 		return Token{t, 0, ident}
 	}
-	if t, is_mod := mods[ident]; is_mod {
+	if t, is_mod := mods[strings.ToUpper(ident)]; is_mod {
 		return Token{t, 0, ident}
 	}
 	return Token{LABEL, 0, ident}

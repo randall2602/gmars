@@ -22,9 +22,13 @@ func main() {
 	fmt.Println()
 	fmt.Println("Tokens:")
 	for tok := scanner.Next(); tok.Type != token.EOF; tok = scanner.Next() {
-		fmt.Print("tok: ", tok, " ")
-		if tok.Type == token.NEWLINE {
+		switch tok.Type {
+		case token.NEWLINE:
 			fmt.Print("\n")
+		case token.LABEL, token.INT:
+			fmt.Print(tok.Text, " ")
+		default:
+			fmt.Print(tok, " ")
 		}
 	}
 	fmt.Print("\n")

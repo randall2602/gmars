@@ -88,7 +88,7 @@ func (l *Scanner) emit(t token.Type) {
 		l.line++
 	}
 	s := l.input[l.start:l.pos]
-	l.tokens <- token.Token{t, l.line, s}
+	l.tokens <- token.Token{Type: t, Line: l.line, Text: s}
 	l.start = l.pos
 	l.width = 0
 }
@@ -117,7 +117,7 @@ func (l *Scanner) acceptRun(valid string) {
 
 // errorf returns an error token and continues to scan.
 func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
-	l.tokens <- token.Token{token.ILLEGAL, l.start, fmt.Sprintf(format, args...)}
+	l.tokens <- token.Token{Type: token.ILLEGAL, Line: l.start, Text: fmt.Sprintf(format, args...)}
 	return lexAny
 }
 
@@ -151,7 +151,7 @@ func (l *Scanner) Next() token.Token {
 		close(l.tokens)
 		l.tokens = nil
 	}
-	return token.Token{token.EOF, l.pos, "EOF"}
+	return token.Token{Type: token.EOF, Line: l.pos, Text: "EOF"}
 }
 
 // state functions
