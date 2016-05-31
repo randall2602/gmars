@@ -1,7 +1,7 @@
 // Package token defines constants representing the lexical tokens of Redcode
 // and basic operations on tokens (printing, predicates).
 //
-package token
+package lex
 
 import (
 	"strconv"

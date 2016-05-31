@@ -1,4 +1,4 @@
-package scanner
+package lex
 
 import (
 	//"fmt"
@@ -7,8 +7,6 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"github.com/randall2602/gmars/token"
 )
 
 const eof = -1
@@ -18,7 +16,7 @@ type stateFn func(*Scanner) stateFn
 
 // Scanner holds the state of the scanner.
 type Scanner struct {
-	tokens     chan token.Token // channel of scanned items
+	tokens     chan Token // channel of scanned items
 	r          io.ByteReader
 	done       bool
 	name       string // the name of the input; used only for error reports
@@ -83,12 +81,12 @@ func (l *Scanner) backup() {
 }
 
 // emit passes an item back to the client.
-func (l *Scanner) emit(t token.Type) {
-	if t == token.NEWLINE {
+func (l *Scanner) emit(t Type) {
+	if t == NEWLINE {
 		l.line++
 	}
 	s := l.input[l.start:l.pos]
-	l.tokens <- token.Token{Type: t, Line: l.line, Text: s}
+	l.tokens <- Token{Type: t, Line: l.line, Text: s}
 	l.start = l.pos
 	l.width = 0
 }
@@ -117,7 +115,7 @@ func (l *Scanner) acceptRun(valid string) {
 
 // errorf returns an error token and continues to scan.
 func (l *Scanner) errorf(format string, args ...interface{}) stateFn {
-	l.tokens <- token.Token{Type: token.ILLEGAL, Line: l.start, Text: fmt.Sprintf(format, args...)}
+	l.tokens <- Token{Type: ILLEGAL, Line: l.start, Text: fmt.Sprintf(format, args...)}
 	return lexAny
 }
 
@@ -127,14 +125,14 @@ func New(name string, r io.ByteReader) *Scanner {
 		r:      r,
 		name:   name,
 		line:   1,
-		tokens: make(chan token.Token, 2), // We need a little room to save tokens.
+		tokens: make(chan Token, 2), // We need a little room to save tokens.
 		state:  lexAny,
 	}
 	return l
 }
 
 // Next returns the next token.
-func (l *Scanner) Next() token.Token {
+func (l *Scanner) Next() Token {
 	// The lexer is concurrent but we don't want it to run in parallel
 	// with the rest of the interpreter, so we only run the state machine
 	// when we need a token.
@@ -151,7 +149,7 @@ func (l *Scanner) Next() token.Token {
 		close(l.tokens)
 		l.tokens = nil
 	}
-	return token.Token{Type: token.EOF, Line: l.pos, Text: "EOF"}
+	return Token{Type: EOF, Line: l.pos, Text: "EOF"}
 }
 
 // state functions
@@ -162,13 +160,13 @@ func lexAny(l *Scanner) stateFn {
 	case r == eof:
 		return nil
 	case r == '\n' || r == '\r':
-		l.emit(token.NEWLINE)
+		l.emit(NEWLINE)
 		if l.peek() == '\n' || l.peek() == '\r' {
 			l.next()
 		}
 		return lexAny
 	case r == ';':
-		l.emit(token.SEMICOLON)
+		l.emit(SEMICOLON)
 		return lexComment
 	case isSpace(r):
 		return lexSpace
@@ -176,46 +174,46 @@ func lexAny(l *Scanner) stateFn {
 		l.backup()
 		return lexNumber
 	case r == '+':
-		l.emit(token.PLUS)
+		l.emit(PLUS)
 		return lexAny
 	case r == '-':
-		l.emit(token.MINUS)
+		l.emit(MINUS)
 		return lexAny
 	case r == '*':
-		l.emit(token.ASTERISK)
+		l.emit(ASTERISK)
 		return lexAny
 	case r == '/':
-		l.emit(token.FSLASH)
+		l.emit(FSLASH)
 		return lexAny
 	case r == '%':
-		l.emit(token.PERCENT)
+		l.emit(PERCENT)
 		return lexAny
 	case r == '(':
-		l.emit(token.LPAREN)
+		l.emit(LPAREN)
 		return lexAny
 	case r == ')':
-		l.emit(token.RPAREN)
+		l.emit(RPAREN)
 		return lexAny
 	case r == '.':
-		l.emit(token.DOT)
+		l.emit(DOT)
 		return lexAny
 	case r == ',':
-		l.emit(token.COMMA)
+		l.emit(COMMA)
 		return lexAny
 	case r == '#':
-		l.emit(token.HASH)
+		l.emit(HASH)
 		return lexAny
 	case r == '$':
-		l.emit(token.DSIGN)
+		l.emit(DSIGN)
 		return lexAny
 	case r == '@':
-		l.emit(token.ATSIGN)
+		l.emit(ATSIGN)
 		return lexAny
 	case r == '<':
-		l.emit(token.LTHAN)
+		l.emit(LTHAN)
 		return lexAny
 	case r == '>':
-		l.emit(token.GTHAN)
+		l.emit(GTHAN)
 		return lexAny
 	case isAlphaNumeric(r): // Already got numbers
 		l.backup()
@@ -237,7 +235,7 @@ func lexComment(l *Scanner) stateFn {
 		l.pos = len(l.input)
 		l.start = l.pos - 1
 		// Emitting newline also advances l.line.
-		l.emit(token.NEWLINE)
+		l.emit(NEWLINE)
 	}
 	return lexSpace
 }
@@ -255,7 +253,7 @@ func lexSpace(l *Scanner) stateFn {
 // lexNumber scans a number. "05" == "5"
 func lexNumber(l *Scanner) stateFn {
 	l.acceptRun("0123456789")
-	l.emit(token.INT)
+	l.emit(INT)
 	return lexAny
 }
 
@@ -268,7 +266,7 @@ Loop:
 		default:
 			l.backup()
 			word := l.input[l.start:l.pos]
-			t := token.Lookup(word)
+			t := Lookup(word)
 			l.emit(t.Type)
 			break Loop
 		}

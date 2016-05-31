@@ -1,4 +1,4 @@
-package token
+package lex
 
 import (
 	"fmt"
