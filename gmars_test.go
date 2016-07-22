@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"testing"
 	"os"
+	"testing"
 
 	"github.com/randall2602/gmars/lex"
 )
@@ -18,16 +18,18 @@ func TestGmars(t *testing.T) {
 	}
 	scanner := lex.New(name, bufio.NewReader(file))
 	var tokens []lex.Token
+	expected := []string{"1", "\n", "a", "\n", "+", "\n"}
+	i := 0
 	for tok := scanner.Next(); tok.Type != lex.EOF; tok = scanner.Next() {
+		if len(expected) <= i {
+			t.Errorf("Expected EOF, got %q", tok.Text)
+			break
+		}
+		if tok.Text != expected[i] {
+			t.Errorf("Expected %q, got %q", expected[i], tok.Text)
+		}
 		tokens = append(tokens, tok)
+		i++
 	}
-	if len(tokens) != 6 {
-		t.Errorf("Incorrect number of tokens, expected 6, got %v", len(tokens))
-	}
-	
-	for _, tok := range tokens {
-		t.Logf("tok: %q, type: %v", tok.Text, tok)
-	}
-	fmt.Print("\n")
 	return
 }
