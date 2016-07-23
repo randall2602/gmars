@@ -1,4 +1,4 @@
-package main
+package lex
 
 import (
 	"bufio"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestGmars(t *testing.T) {
-	name := "test1.red"
+	name := "../test1.red"
 	file, err := os.Open(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
