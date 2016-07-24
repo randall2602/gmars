@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/randall2602/gmars/lex"
 )
 
 func TestGmars(t *testing.T) {
