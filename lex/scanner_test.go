@@ -15,11 +15,11 @@ func TestGmars(t *testing.T) {
 		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
 		os.Exit(1)
 	}
-	scanner := lex.New(name, bufio.NewReader(file))
-	var tokens []lex.Token
+	scanner := New(name, bufio.NewReader(file))
+	var tokens []Token
 	expected := []string{"1", "\n", "a", "\n", "+", "\n"}
 	i := 0
-	for tok := scanner.Next(); tok.Type != lex.EOF; tok = scanner.Next() {
+	for tok := scanner.Next(); tok.Type != EOF; tok = scanner.Next() {
 		if len(expected) <= i {
 			t.Errorf("Expected EOF, got %q", tok.Text)
 			break
