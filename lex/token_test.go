@@ -502,7 +502,73 @@ func TestLookup(t *testing.T) {
 		args args
 		want Token
 	}{
-	// TODO: Add test cases.
+		{
+			name: "Lookup LABEL",
+			args: args{
+				ident: "LABEL1",
+			},
+			want: Token{LABEL, 0, "LABEL1"},
+		}, {
+			name: "Lookup PLUS",
+			args: args{
+				ident: "+",
+			},
+			want: Token{PLUS, 0, "+"},
+		}, {
+			name: "Lookup MINUS",
+			args: args{
+				ident: "-",
+			},
+			want: Token{MINUS, 0, "-"},
+		}, {
+			name: "Lookup ASTERISK",
+			args: args{
+				ident: "*",
+			},
+			want: Token{ASTERISK, 0, "*"},
+		}, {
+			name: "Lookup FSLASH",
+			args: args{
+				ident: "/",
+			},
+			want: Token{FSLASH, 0, "/"},
+		}, {
+			name: "Lookup PERCENT",
+			args: args{
+				ident: "%",
+			},
+			want: Token{PERCENT, 0, "%"},
+		}, {
+			name: "Lookup LPAREN",
+			args: args{
+				ident: "(",
+			},
+			want: Token{LPAREN, 0, "("},
+		}, {
+			name: "Lookup RPAREN",
+			args: args{
+				ident: ")",
+			},
+			want: Token{RPAREN, 0, ")"},
+		}, {
+			name: "Lookup DOT",
+			args: args{
+				ident: ".",
+			},
+			want: Token{DOT, 0, "."},
+		}, {
+			name: "Lookup COMMA",
+			args: args{
+				ident: ",",
+			},
+			want: Token{COMMA, 0, ","},
+		}, {
+			name: "Lookup SEMICOLON",
+			args: args{
+				ident: ";",
+			},
+			want: Token{SEMICOLON, 0, ";"},
+		},
 	}
 	for _, tt := range tests {
 		if got := Lookup(tt.args.ident); !reflect.DeepEqual(got, tt.want) {
