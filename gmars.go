@@ -34,7 +34,8 @@ func main() {
 		n, err := files[i].Read(buf)
 		check(err)
 		fmt.Printf("%d bytes: \n%s\n\n", n, string(buf))
-		files[i].Seek(0, 0)
+		_, err = files[i].Seek(0, 0)
+		check(err)
 	}
 	fmt.Println()
 
