@@ -1,38 +1,92 @@
+//Generated TestNew
+//Generated TestScanner_Next
 package lex
 
 import (
-	"bufio"
-	"fmt"
-	"os"
+	//"bufio"
+	"io"
+	//"os"
+	"reflect"
 	"testing"
 )
 
-func TestGmars(t *testing.T) {
-	name := "../red/dwarf.red"
-	file, err := os.Open(name)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
-		os.Exit(1)
+func TestNew(t *testing.T) {
+	//file, _ := os.Open("../red/dwarf.red")
+	//reader := bufio.NewReader(file)
+	type args struct {
+		name string
+		r    io.ByteReader
 	}
-	scanner := New(name, bufio.NewReader(file))
-	var tokens []Token
-	expected := []string{
-		"ADD", "#", "4", ",", "3", "\n",
-		"MOV", "2", ",", "@", "2", "\n",
-		"JMP", "-", "2", "\n",
-		"DAT", "#", "0", ",", "#", "0",
+	tests := []struct {
+		name string
+		args args
+		want *Scanner
+	}{
+	/*
+		{
+			name: "Test New()",
+			args: args{
+				name: "My Scanner",
+				r:    reader,
+			},
+			want: &Scanner{
+				r:      reader,
+				name:   "My Scanner",
+				line:   1,
+				tokens: make(chan Token, 2),
+				state:  lexAny,
+			},
+		},
+	*/
 	}
-	i := 0
-	for tok := scanner.Next(); tok.Type != EOF; tok = scanner.Next() {
-		if len(expected) <= i {
-			t.Errorf("Expected EOF, got %q", tok.Text)
-			break
+	for _, tt := range tests {
+		if got := New(tt.args.name, tt.args.r); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. New() = %v, want %v", tt.name, got, tt.want)
 		}
-		if tok.Text != expected[i] {
-			t.Errorf("Expected %q, got %q", expected[i], tok.Text)
-		}
-		tokens = append(tokens, tok)
-		i++
 	}
-	return
+}
+
+func TestScanner_Next(t *testing.T) {
+	type fields struct {
+		tokens     chan Token
+		r          io.ByteReader
+		done       bool
+		name       string
+		buf        []byte
+		input      string
+		leftDelim  string
+		rightDelim string
+		state      stateFn
+		line       int
+		pos        int
+		start      int
+		width      int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   Token
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		l := &Scanner{
+			tokens:     tt.fields.tokens,
+			r:          tt.fields.r,
+			done:       tt.fields.done,
+			name:       tt.fields.name,
+			buf:        tt.fields.buf,
+			input:      tt.fields.input,
+			leftDelim:  tt.fields.leftDelim,
+			rightDelim: tt.fields.rightDelim,
+			state:      tt.fields.state,
+			line:       tt.fields.line,
+			pos:        tt.fields.pos,
+			start:      tt.fields.start,
+			width:      tt.fields.width,
+		}
+		if got := l.Next(); !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%q. Scanner.Next() = %v, want %v", tt.name, got, tt.want)
+		}
+	}
 }
