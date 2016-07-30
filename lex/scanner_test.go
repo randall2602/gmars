@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 	"testing"
-
 )
 
 func TestGmars(t *testing.T) {
-	name := "../test1.red"
+	name := "../red/dwarf.red"
 	file, err := os.Open(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "gmars: %s\n", err)
@@ -17,7 +16,12 @@ func TestGmars(t *testing.T) {
 	}
 	scanner := New(name, bufio.NewReader(file))
 	var tokens []Token
-	expected := []string{"1", "\n", "a", "\n", "+", "\n"}
+	expected := []string{
+		"ADD", "#", "4", ",", "3", "\n",
+		"MOV", "2", ",", "@", "2", "\n",
+		"JMP", "-", "2", "\n",
+		"DAT", "#", "0", ",", "#", "0",
+	}
 	i := 0
 	for tok := scanner.Next(); tok.Type != EOF; tok = scanner.Next() {
 		if len(expected) <= i {
