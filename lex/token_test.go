@@ -399,7 +399,87 @@ func TestToken_Precedence(t *testing.T) {
 		fields fields
 		want   int
 	}{
-	// TODO: Add test cases.
+		{
+			name: "PLUS Operator Precedence",
+			fields: fields{
+				Type: PLUS,
+				Line: 1,
+				Text: "+",
+			},
+			want: 1,
+		}, {
+			name: "MINUS Operator Precedence",
+			fields: fields{
+				Type: MINUS,
+				Line: 1,
+				Text: "-",
+			},
+			want: 1,
+		}, {
+			name: "ASTERISK Operator Precedence",
+			fields: fields{
+				Type: ASTERISK,
+				Line: 1,
+				Text: "*",
+			},
+			want: 2,
+		}, {
+			name: "FSLASH Operator Precedence",
+			fields: fields{
+				Type: FSLASH,
+				Line: 1,
+				Text: "/",
+			},
+			want: 2,
+		}, {
+			name: "PERCENT Operator Precedence",
+			fields: fields{
+				Type: PERCENT,
+				Line: 1,
+				Text: "%",
+			},
+			want: 2,
+		}, {
+			name: "LPAREN Operator Precedence",
+			fields: fields{
+				Type: LPAREN,
+				Line: 1,
+				Text: "(",
+			},
+			want: 0,
+		}, {
+			name: "RPAREN Operator Precedence",
+			fields: fields{
+				Type: RPAREN,
+				Line: 1,
+				Text: ")",
+			},
+			want: 0,
+		}, {
+			name: "DOT Operator Precedence",
+			fields: fields{
+				Type: DOT,
+				Line: 1,
+				Text: ".",
+			},
+			want: 0,
+		}, {
+			name: "COMMA Operator Precedence",
+			fields: fields{
+				Type: COMMA,
+				Line: 1,
+				Text: ",",
+			},
+			want: 0,
+		}, {
+			name: "SEMICOLON Operator Precedence",
+			fields: fields{
+				Type: SEMICOLON,
+				Line: 1,
+				Text: ";",
+			},
+			want: 0,
+		},
 	}
 	for _, tt := range tests {
 		tok := Token{
