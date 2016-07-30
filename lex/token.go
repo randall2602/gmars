@@ -34,7 +34,8 @@ const (
 
 	operator_beg
 	// Operators and delimiters
-	// Many have non-standard names to prevent conflicts with opcodes (PLUS/ADD, MINUS/SUB)
+	// Many have non-standard names to prevent conflicts with opcodes (PLUS/ADD,
+	// MINUS/SUB)
 	PLUS      // 1+1
 	MINUS     // 1-1
 	ASTERISK  // 1*1
@@ -185,14 +186,25 @@ func (tok Token) Precedence() int {
 	return LowestPrec
 }
 
-var opcodes map[string]Type
-var mods map[string]Type
+var operators, modes, opcodes, mods map[string]Type
 
 func init() {
+
+	operators = make(map[string]Type)
+	for i := operator_beg + 1; i < operator_end; i++ {
+		operators[types[i]] = i
+	}
+
+	modes = make(map[string]Type)
+	for i := mode_beg + 1; i < mode_end; i++ {
+		modes[types[i]] = i
+	}
+
 	opcodes = make(map[string]Type)
 	for i := opcode_beg + 1; i < opcode_end; i++ {
 		opcodes[types[i]] = i
 	}
+
 	mods = make(map[string]Type)
 	for i := mod_beg + 1; i < mod_end; i++ {
 		mods[types[i]] = i
@@ -202,9 +214,18 @@ func init() {
 // Lookup maps an identifier to its keyword token or LABEL (if not a keyword).
 //
 func Lookup(ident string) Token {
+	if t, is_operator := operators[strings.ToUpper(ident)]; is_operator {
+		return Token{t, 0, ident}
+	}
+
+	if t, is_mode := modes[strings.ToUpper(ident)]; is_mode {
+		return Token{t, 0, ident}
+	}
+
 	if t, is_opcode := opcodes[strings.ToUpper(ident)]; is_opcode {
 		return Token{t, 0, ident}
 	}
+
 	if t, is_mod := mods[strings.ToUpper(ident)]; is_mod {
 		return Token{t, 0, ident}
 	}
