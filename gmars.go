@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// double check that files loaded correctly
-	for i, _ := range files {
+	for i := range files {
 		buf := make([]byte, 4096)
 		n, err := files[i].Read(buf)
 		check(err)
@@ -39,7 +39,7 @@ func main() {
 	fmt.Println()
 
 	lexed_files := [len(names)][]lex.Token{}
-	for i, _ := range files {
+	for i := range files {
 		scanner := lex.New(names[i], bufio.NewReader(files[i]))
 		for tok := scanner.Next(); tok.Type != lex.EOF; tok = scanner.Next() {
 			lexed_files[i] = append(lexed_files[i], tok)
